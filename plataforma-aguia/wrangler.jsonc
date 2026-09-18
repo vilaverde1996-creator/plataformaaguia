@@ -1,0 +1,14 @@
+{
+  // Este nome precisa ser IGUAL ao nome do projeto na Cloudflare.
+  // Confira no topo da página do projeto, em Workers & Pages.
+  "name": "plataformaaguia",
+
+  "compatibility_date": "2026-09-17",
+
+  // O site é só de arquivos estáticos: não há código de servidor.
+  // A pasta "dist" é criada pelo comando de build.
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "single-page-application"
+  }
+}
