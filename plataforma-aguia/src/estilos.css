@@ -1,0 +1,178 @@
+/* ── Identidade visual, herdada do plano de estudos atual ───────── */
+:root {
+  --tinta: #0D134C;
+  --tinta-media: #4a5080;
+  --tinta-suave: #8a90b8;
+  --fundo: #eef0f7;
+  --papel: #fff;
+  --borda: #e2e5f0;
+  --ambar: #d97706;
+  --ambar-escuro: #b45309;
+  --trigo: #fde68a;
+  --verde: #22c55e;
+  --verde-fundo: #dcfce7;
+  --vermelho: #ef4444;
+  --vermelho-fundo: #fee2e2;
+  --raio: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .marca { font-family: 'Nunito', system-ui, sans-serif; }
+h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.02em; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; font-weight: 800; margin: 0 0 12px; }
+a { color: var(--ambar-escuro); }
+
+/* ── Entrar ─────────────────────────────────────────────────────── */
+.entrada {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(1100px 500px at 50% -10%, #f7f8fc 0%, var(--fundo) 60%);
+}
+
+.entrada-caixa {
+  width: 100%;
+  max-width: 380px;
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 32px 28px;
+  box-shadow: 0 18px 40px rgba(13, 19, 76, 0.08);
+}
+
+.marca {
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 4px;
+}
+.marca span { color: var(--ambar); }
+
+.entrada-legenda { color: var(--tinta-media); margin: 0 0 26px; }
+
+label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--tinta-media); margin-bottom: 6px; }
+
+input[type="email"], input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: #fafbff;
+  font: inherit;
+  color: var(--tinta);
+  margin-bottom: 16px;
+}
+input:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 1px;
+  background: #fff;
+}
+
+.botao {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--tinta);
+  color: #fff;
+  font: 600 0.95rem 'Inter', sans-serif;
+  cursor: pointer;
+}
+.botao:hover { background: #161d63; }
+.botao:disabled { opacity: 0.55; cursor: progress; }
+.botao-texto {
+  background: none; border: 0; padding: 8px 0; margin-top: 10px;
+  color: var(--tinta-media); font: inherit; cursor: pointer; text-decoration: underline;
+}
+
+.aviso { border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; font-size: 0.9rem; }
+.aviso-erro { background: var(--vermelho-fundo); color: #991b1b; }
+.aviso-ok { background: var(--verde-fundo); color: #166534; }
+
+/* ── Estrutura das telas internas ────────────────────────────────── */
+.topo {
+  background: var(--papel);
+  border-bottom: 1px solid var(--borda);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topo .marca { font-size: 1.2rem; margin: 0; }
+.topo-usuario { color: var(--tinta-media); font-size: 0.88rem; }
+
+.pagina { max-width: 1040px; margin: 0 auto; padding: 28px 24px 64px; }
+.subtitulo { color: var(--tinta-media); margin: 0 0 24px; }
+
+.cartao {
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 20px;
+}
+
+.grade { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 24px; }
+
+.indicador .numero { font-family: 'Nunito', sans-serif; font-size: 2rem; font-weight: 900; line-height: 1.1; }
+.indicador .rotulo { color: var(--tinta-suave); font-size: 0.82rem; }
+.indicador .detalhe { color: var(--tinta-media); font-size: 0.85rem; margin-top: 4px; }
+
+.recado {
+  background: var(--trigo);
+  border: 1px solid #f5d67a;
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  margin-bottom: 24px;
+}
+.recado h2 { font-size: 0.95rem; margin-bottom: 4px; }
+
+/* ── Lista de alunos ─────────────────────────────────────────────── */
+.aluno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--borda);
+}
+.aluno:last-child { border-bottom: 0; }
+.aluno-nome { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.05rem; flex: 1 1 180px; }
+.aluno-dado { min-width: 92px; }
+.aluno-dado b { display: block; font-family: 'Nunito', sans-serif; font-size: 1.15rem; font-weight: 800; }
+.aluno-dado span { color: var(--tinta-suave); font-size: 0.78rem; }
+
+.etiqueta {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: var(--verde-fundo);
+  color: #166534;
+}
+.etiqueta-alerta { background: var(--vermelho-fundo); color: #991b1b; }
+.etiqueta-atencao { background: #fef3c7; color: #92400e; }
+
+.vazio { color: var(--tinta-media); text-align: center; padding: 40px 20px; }
+
+.carregando { display: grid; place-items: center; min-height: 100dvh; color: var(--tinta-media); }
+
+@media (max-width: 560px) {
+  .pagina { padding: 20px 16px 48px; }
+  .aluno { gap: 12px; }
+}
