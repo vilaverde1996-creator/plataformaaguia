@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 // ───────────────────────────────────────────────────────────────────
 
 const URL_SUPABASE = 'https://bygylyxsfxqxndpikofd.supabase.co';
-const CHAVE_ANON = 'COLE_AQUI_A_CHAVE_ANON_PUBLIC';
+const CHAVE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3lseXhzZnhxeG5kcGlrb2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2OTE2NTQsImV4cCI6MjEwNTI2NzY1NH0.lkxbTS4KaNDRxxAAdWE8uSvK55C7fBtHBIVyawd4dgg';
 
 const url = import.meta.env.VITE_SUPABASE_URL || URL_SUPABASE;
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY || CHAVE_ANON;
