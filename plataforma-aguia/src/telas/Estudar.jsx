@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDados } from '../lib/dados.jsx';
+import { useCronometro, relogio, horasCurtas } from '../lib/cronometro.jsx';
 
 const TIPOS = [
   { id: 'teoria', rotulo: 'Teoria' },
@@ -13,92 +14,30 @@ const TIPOS = [
   { id: 'outro', rotulo: 'Outro' },
 ];
 
-const CHAVE_CRONO = 'aguia:cronometro';
-
-export function relogio(segundos) {
-  const s = Math.max(0, Math.round(segundos));
-  const h = String(Math.floor(s / 3600)).padStart(2, '0');
-  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-  const seg = String(s % 60).padStart(2, '0');
-  return `${h}:${m}:${seg}`;
-}
-
-export function horasCurtas(segundos) {
-  const h = Math.floor(segundos / 3600);
-  const m = Math.round((segundos % 3600) / 60);
-  if (h === 0) return `${m}min`;
-  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
-}
-
 function hoje() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function lerCrono() {
-  try { return JSON.parse(localStorage.getItem(CHAVE_CRONO) || 'null'); } catch { return null; }
-}
-
-function gravarCrono(estado) {
-  try {
-    if (estado) localStorage.setItem(CHAVE_CRONO, JSON.stringify(estado));
-    else localStorage.removeItem(CHAVE_CRONO);
-  } catch { /* navegação privada */ }
-}
+export { relogio, horasCurtas };
 
 export default function Estudar() {
   const { disciplinas, registros, adicionarRegistro, excluirRegistro, agendarRevisoes, carregando } = useDados();
 
-  // ── Cronômetro ──
-  const salvo = useRef(lerCrono()).current;
-  const [rodando, setRodando] = useState(!!salvo?.iniciadoEm);
-  const [acumulado, setAcumulado] = useState(salvo?.acumulado ?? 0);
-  const [iniciadoEm, setIniciadoEm] = useState(salvo?.iniciadoEm ?? null);
-  const [agora, setAgora] = useState(Date.now());
+  // ── Cronômetro (o mesmo que aparece na caixinha flutuante) ──
+  const { rodando, decorrido, iniciar, pausar, zerar, contexto, definirContexto } = useCronometro();
 
-  const [discCrono, setDiscCrono] = useState(salvo?.disciplina_id ?? '');
-  const [topicoCrono, setTopicoCrono] = useState(salvo?.topico_id ?? '');
-  const [tipoCrono, setTipoCrono] = useState(salvo?.tipo ?? 'teoria');
+  const discCrono = contexto.disciplina_id;
+  const topicoCrono = contexto.topico_id;
+  const tipoCrono = contexto.tipo;
+  const setDiscCrono = (v) => definirContexto({ disciplina_id: v, topico_id: '' });
+  const setTopicoCrono = (v) => definirContexto({ topico_id: v });
+  const setTipoCrono = (v) => definirContexto({ tipo: v });
 
   const [fecharSessao, setFecharSessao] = useState(false);
   const [extras, setExtras] = useState({ questoes: '', acertos: '', erros: '', obs: '' });
   const [agendar, setAgendar] = useState(true);
   const [aviso, setAviso] = useState('');
-
-  useEffect(() => {
-    if (!rodando) return;
-    const t = setInterval(() => setAgora(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [rodando]);
-
-  useEffect(() => {
-    gravarCrono(
-      rodando || acumulado > 0
-        ? { acumulado, iniciadoEm, disciplina_id: discCrono, topico_id: topicoCrono, tipo: tipoCrono }
-        : null
-    );
-  }, [rodando, acumulado, iniciadoEm, discCrono, topicoCrono, tipoCrono]);
-
-  const decorrido = acumulado + (rodando && iniciadoEm ? (agora - iniciadoEm) / 1000 : 0);
-
-  function iniciar() {
-    setIniciadoEm(Date.now());
-    setRodando(true);
-  }
-
-  function pausar() {
-    setAcumulado(decorrido);
-    setIniciadoEm(null);
-    setRodando(false);
-  }
-
-  function zerar() {
-    setRodando(false);
-    setIniciadoEm(null);
-    setAcumulado(0);
-    setFecharSessao(false);
-    gravarCrono(null);
-  }
 
   async function registrarSessao() {
     const segundos = decorrido;
@@ -128,6 +67,7 @@ export default function Estudar() {
         setAviso(`Sessão de ${horasCurtas(segundos)} registrada.`);
       }
       setExtras({ questoes: '', acertos: '', erros: '', obs: '' });
+      setFecharSessao(false);
       zerar();
     }
   }

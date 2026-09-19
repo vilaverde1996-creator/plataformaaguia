@@ -7,6 +7,8 @@ import PainelMentora from './telas/PainelMentora.jsx';
 import Importar from './telas/Importar.jsx';
 import Ciclos from './telas/Ciclos.jsx';
 import Ciclo from './telas/Ciclo.jsx';
+import Questoes from './telas/Questoes.jsx';
+import { ProvedorCronometro, BarraCronometro } from './lib/cronometro.jsx';
 import Painel from './telas/Painel.jsx';
 import Edital from './telas/Edital.jsx';
 import Estudar from './telas/Estudar.jsx';
@@ -18,6 +20,7 @@ const ABAS = [
   { id: 'inicio', rotulo: 'Início' },
   { id: 'ciclo', rotulo: 'Ciclo' },
   { id: 'estudar', rotulo: 'Estudar' },
+  { id: 'questoes', rotulo: 'Questões' },
   { id: 'edital', rotulo: 'Edital' },
   { id: 'revisoes', rotulo: 'Revisões' },
   { id: 'estatisticas', rotulo: 'Estatísticas' },
@@ -93,15 +96,21 @@ function AreaAluno({ nome }) {
   return (
     <ProvedorDados>
       <BarraAluno aba={aba} setAba={setAba} />
+      <BarraCronometro irPara={setAba} />
       {aba === 'inicio' && <Painel nome={nome} irPara={setAba} />}
       {aba === 'ciclo' && <Ciclo irPara={setAba} />}
       {aba === 'estudar' && <Estudar />}
+      {aba === 'questoes' && <Questoes />}
       {aba === 'edital' && <Edital />}
       {aba === 'revisoes' && <Revisoes />}
       {aba === 'estatisticas' && <Estatisticas />}
       {aba === 'plano' && <PlanoDeVoo />}
     </ProvedorDados>
   );
+}
+
+function ComCronometro({ children }) {
+  return <ProvedorCronometro>{children}</ProvedorCronometro>;
 }
 
 export default function App() {
@@ -136,7 +145,9 @@ export default function App() {
       ) : ehMentora ? (
         <AreaMentora />
       ) : (
-        <AreaAluno nome={(perfil?.nome || '').split(' ')[0] || 'tudo bem'} />
+        <ComCronometro>
+          <AreaAluno nome={(perfil?.nome || '').split(' ')[0] || 'tudo bem'} />
+        </ComCronometro>
       )}
     </>
   );

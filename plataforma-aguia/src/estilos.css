@@ -583,3 +583,69 @@ input[type="file"] {
   padding: 7px 11px; font-size: 0.83rem; background: var(--papel);
 }
 .fila-item b { color: var(--tinta-suave); margin-right: 4px; }
+
+/* ── Cronômetro flutuante ────────────────────────────────────────── */
+.crono-flutuante {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  background: var(--tinta);
+  border-radius: 999px;
+  padding: 5px;
+  box-shadow: 0 10px 26px rgba(13, 19, 76, 0.28);
+}
+.crono-ativo { box-shadow: 0 10px 26px rgba(217, 119, 6, 0.35); }
+.crono-mini-botao {
+  width: 38px; height: 38px; flex: none;
+  border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--ambar); color: #fff; font-size: 0.8rem;
+}
+.crono-mini-botao:hover { background: var(--ambar-escuro); }
+.crono-mini-tempo {
+  border: 0; background: none; cursor: pointer;
+  color: #fff; text-align: left; padding: 0 14px 0 10px;
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-variant-numeric: tabular-nums; font-size: 1rem; line-height: 1.1;
+}
+.crono-mini-tempo span {
+  display: block; font-family: 'Inter', sans-serif; font-weight: 400;
+  font-size: 0.68rem; color: var(--trigo);
+}
+
+/* ── Questões ────────────────────────────────────────────────────── */
+.filtros-questoes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.questao-topo {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  color: var(--tinta-suave); font-size: 0.78rem; margin-bottom: 12px;
+}
+.questao-enunciado { font-size: 1rem; line-height: 1.6; margin: 0 0 16px; white-space: pre-wrap; }
+.questao-imagem { max-width: 100%; border-radius: 10px; margin-bottom: 16px; }
+.alternativas { display: grid; gap: 8px; margin-bottom: 16px; }
+.alternativa {
+  display: flex; gap: 12px; align-items: flex-start; text-align: left;
+  border: 1px solid var(--borda); border-radius: 10px;
+  background: var(--papel); padding: 12px 14px; cursor: pointer;
+  font: inherit; color: var(--tinta); line-height: 1.5;
+}
+.alternativa:hover:not(:disabled) { border-color: var(--ambar); }
+.alternativa:disabled { cursor: default; }
+.alternativa-letra {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--fundo);
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.82rem;
+}
+.alternativa-escolhida { border-color: var(--ambar); background: #fffdf5; }
+.alternativa-escolhida .alternativa-letra { background: var(--trigo); }
+.alternativa-certa { border-color: #16a34a; background: var(--verde-fundo); }
+.alternativa-certa .alternativa-letra { background: #bbf7d0; }
+.alternativa-errada { border-color: var(--vermelho); background: var(--vermelho-fundo); }
+.alternativa-errada .alternativa-letra { background: #fecaca; }
+.questao-contador { color: var(--tinta-suave); font-size: 0.82rem; }
+
+@media (max-width: 560px) {
+  .crono-flutuante { right: 12px; bottom: 12px; }
+}

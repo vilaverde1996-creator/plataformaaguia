@@ -374,6 +374,23 @@ export function ProvedorDados({ children }) {
   }, [revisoes]);
 
 
+  // Reflete na hora, na tela, o acerto ou erro que o gatilho do banco
+  // já gravou no progresso do tópico.
+  const aplicarResposta = useCallback((topicoId, correta) => {
+    setProgresso((atual) => {
+      const antes = atual[topicoId] ?? { topico_id: topicoId, concluido: false, acertos: 0, erros: 0, questoes: 0 };
+      return {
+        ...atual,
+        [topicoId]: {
+          ...antes,
+          acertos: (antes.acertos ?? 0) + (correta ? 1 : 0),
+          erros: (antes.erros ?? 0) + (correta ? 0 : 1),
+          questoes: (antes.questoes ?? 0) + 1,
+        },
+      };
+    });
+  }, []);
+
   // ── Ciclos ─────────────────────────────────────────────────────
   // A fila só anda aqui: ao concluir (ou pular) um ciclo.
   const avancarCiclo = useCallback(async ({ posicao, disciplinaId, topicoId, pulado }) => {
@@ -454,7 +471,7 @@ export function ProvedorDados({ children }) {
         disciplinas, progresso, plano, totais,
         registros, adicionarRegistro, excluirRegistro,
         revisoes, agendarRevisoes, alternarRevisao, excluirRevisao,
-        frases, diasAtivos, cicloItens,
+        frases, diasAtivos, cicloItens, aplicarResposta,
         concluirCiclo, pularCiclo, voltarCiclo,
         sequencia: calcularSequencia(diasAtivos),
         frase: fraseDoDia(frases),
