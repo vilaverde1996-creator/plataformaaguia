@@ -47,7 +47,7 @@ function gravarCrono(estado) {
 }
 
 export default function Estudar() {
-  const { disciplinas, registros, adicionarRegistro, excluirRegistro, carregando } = useDados();
+  const { disciplinas, registros, adicionarRegistro, excluirRegistro, agendarRevisoes, carregando } = useDados();
 
   // ── Cronômetro ──
   const salvo = useRef(lerCrono()).current;
@@ -62,6 +62,7 @@ export default function Estudar() {
 
   const [fecharSessao, setFecharSessao] = useState(false);
   const [extras, setExtras] = useState({ questoes: '', acertos: '', erros: '', obs: '' });
+  const [agendar, setAgendar] = useState(true);
   const [aviso, setAviso] = useState('');
 
   useEffect(() => {
@@ -120,7 +121,12 @@ export default function Estudar() {
     });
 
     if (resultado?.ok) {
-      setAviso(`Sessão de ${horasCurtas(segundos)} registrada.`);
+      if (agendar && topicoCrono) {
+        await agendarRevisoes(topicoCrono, hoje(), [7, 15, 30]);
+        setAviso(`Sessão de ${horasCurtas(segundos)} registrada. Revisões agendadas para 7, 15 e 30 dias.`);
+      } else {
+        setAviso(`Sessão de ${horasCurtas(segundos)} registrada.`);
+      }
       setExtras({ questoes: '', acertos: '', erros: '', obs: '' });
       zerar();
     }
@@ -207,6 +213,14 @@ export default function Estudar() {
             <label>Observação</label>
             <input type="text" value={extras.obs} placeholder="O que travou? O que revisar?"
               onChange={(e) => setExtras({ ...extras, obs: e.target.value })} />
+
+            {topicoCrono && (
+              <label className="caixa-linha">
+                <input type="checkbox" checked={agendar} onChange={(e) => setAgendar(e.target.checked)} />
+                Agendar revisões deste tópico para 7, 15 e 30 dias
+              </label>
+            )}
+
             <button className="botao botao-destaque" type="button" onClick={registrarSessao}>
               Salvar sessão
             </button>

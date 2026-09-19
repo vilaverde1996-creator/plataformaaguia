@@ -39,11 +39,12 @@ export default function Entrar() {
   return (
     <div className="entrada">
       <div className="entrada-caixa">
-        <h1 className="marca">Método <span>Águia</span></h1>
+        <img src="/logo-aguia.png" alt="Asas de Águia" className="logo-entrada" />
+        <h1 className="marca">Asas de <span>Águia</span></h1>
         <p className="entrada-legenda">
           {modoRecuperar
             ? 'Informe seu e-mail e enviamos um link para criar uma senha nova.'
-            : 'Entre para acompanhar seus estudos.'}
+            : 'Voe mais alto. Entre para acompanhar seus estudos.'}
         </p>
 
         {erro && <div className="aviso aviso-erro">{erro}</div>}

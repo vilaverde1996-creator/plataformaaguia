@@ -16,6 +16,83 @@ function lembrada() {
   try { return localStorage.getItem(CHAVE_ESCOLHA); } catch { return null; }
 }
 
+// Marca que o aluno entrou hoje e devolve os dias ativos recentes.
+async function registrarPresenca() {
+  const { data: usuario } = await supabase.auth.getUser();
+  const id = usuario?.user?.id;
+  if (!id) return [];
+
+  const hoje = diaDeHoje();
+  await supabase
+    .from('dias_ativos')
+    .upsert({ aluno_id: id, data: hoje }, { onConflict: 'aluno_id,data', ignoreDuplicates: true });
+
+  const limite = new Date();
+  limite.setDate(limite.getDate() - 200);
+
+  const { data } = await supabase
+    .from('dias_ativos')
+    .select('data, estudou')
+    .eq('aluno_id', id)
+    .gte('data', limite.toISOString().slice(0, 10))
+    .order('data', { ascending: false });
+
+  const dias = data ?? [];
+  if (!dias.some((d) => d.data === hoje)) dias.unshift({ data: hoje, estudou: false });
+  return dias;
+}
+
+export function diaDeHoje() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Quantos dias seguidos o aluno apareceu, contando de hoje para trás.
+// Se ele ainda não entrou hoje, a sequência de ontem continua valendo.
+export function calcularSequencia(dias, hoje = diaDeHoje()) {
+  const conjunto = new Set((dias ?? []).map((d) => (typeof d === 'string' ? d : d.data)));
+  if (conjunto.size === 0) return 0;
+
+  const data = new Date(hoje + 'T12:00:00');
+  if (!conjunto.has(hoje)) data.setDate(data.getDate() - 1);
+
+  let total = 0;
+  for (;;) {
+    const iso = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+    if (!conjunto.has(iso)) break;
+    total += 1;
+    data.setDate(data.getDate() - 1);
+  }
+  return total;
+}
+
+export const NIVEIS = [
+  { minimo: 0, nome: 'No ninho', icone: '🥚' },
+  { minimo: 3, nome: 'Primeiro voo', icone: '🐣' },
+  { minimo: 7, nome: 'Batendo asas', icone: '🪽' },
+  { minimo: 14, nome: 'Planando alto', icone: '🦅' },
+  { minimo: 30, nome: 'Olhar de águia', icone: '👁️' },
+  { minimo: 60, nome: 'Senhora dos céus', icone: '👑' },
+  { minimo: 100, nome: 'Lenda', icone: '🏆' },
+];
+
+export function nivelDaSequencia(sequencia) {
+  let atual = NIVEIS[0];
+  let proximo = null;
+  for (const n of NIVEIS) {
+    if (sequencia >= n.minimo) atual = n;
+    else { proximo = n; break; }
+  }
+  return { ...atual, proximo, faltam: proximo ? proximo.minimo - sequencia : 0 };
+}
+
+// A frase é a mesma para todos no mesmo dia, e muda todo dia.
+export function fraseDoDia(frases, hoje = diaDeHoje()) {
+  if (!frases || frases.length === 0) return null;
+  const dias = Math.floor(new Date(hoje + 'T12:00:00').getTime() / 86400000);
+  return frases[dias % frases.length];
+}
+
 export function ProvedorDados({ children }) {
   const [mentorias, setMentorias] = useState([]);
   const [mentoriaId, setMentoriaId] = useState(null);
@@ -23,6 +100,9 @@ export function ProvedorDados({ children }) {
   const [progresso, setProgresso] = useState({});
   const [plano, setPlano] = useState([]);
   const [registros, setRegistros] = useState([]);
+  const [revisoes, setRevisoes] = useState([]);
+  const [frases, setFrases] = useState([]);
+  const [diasAtivos, setDiasAtivos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
@@ -37,7 +117,7 @@ export function ProvedorDados({ children }) {
         .from('mentorias')
         .select(
           'id, edital_id, plano_id, data_prova, cargo, recado, meta_horas, meta_questoes, ' +
-          'meta_conclusao, meta_aprovamento, editais(nome, orgao, banca, cargo)'
+          'meta_conclusao, meta_aprovamento, link_agendamento, editais(nome, orgao, banca, cargo)'
         )
         .eq('ativa', true);
 
@@ -47,6 +127,14 @@ export function ProvedorDados({ children }) {
         setCarregando(false);
         return;
       }
+
+      registrarPresenca().then((dias) => { if (ativo) setDiasAtivos(dias); });
+
+      supabase
+        .from('frases')
+        .select('id, texto, autor, referencia, tipo')
+        .eq('ativa', true)
+        .then(({ data: f }) => { if (ativo) setFrases(f ?? []); });
 
       const lista = (data ?? []).map((m) => ({ ...m, nomeEdital: m.editais?.nome ?? 'Edital' }));
       setMentorias(lista);
@@ -69,7 +157,7 @@ export function ProvedorDados({ children }) {
     setCarregando(true);
     setErro('');
 
-    const [arvore, prog, secoes, regs] = await Promise.all([
+    const [arvore, prog, secoes, regs, revs] = await Promise.all([
       supabase
         .from('disciplinas')
         .select('id, nome, cor, ordem, grupos(id, nome, ordem, topicos(id, nome, ordem))')
@@ -90,9 +178,14 @@ export function ProvedorDados({ children }) {
         .eq('mentoria_id', m.id)
         .order('data', { ascending: false })
         .limit(400),
+      supabase
+        .from('revisoes')
+        .select('id, topico_id, data_estudo, data_revisao, dias, feita, feita_em')
+        .eq('mentoria_id', m.id)
+        .order('data_revisao', { ascending: true }),
     ]);
 
-    const problema = arvore.error || prog.error || secoes.error || regs.error;
+    const problema = arvore.error || prog.error || secoes.error || regs.error || revs.error;
     if (problema) setErro(problema.message);
 
     setDisciplinas(
@@ -108,6 +201,7 @@ export function ProvedorDados({ children }) {
 
     setPlano(ordenar(secoes.data));
     setRegistros(regs.data ?? []);
+    setRevisoes(revs.data ?? []);
     setCarregando(false);
   }, []);
 
@@ -221,6 +315,57 @@ export function ProvedorDados({ children }) {
 
   const totalSegundos = registros.reduce((s, r) => s + (r.segundos ?? 0), 0);
 
+
+  // ── Revisões espaçadas ─────────────────────────────────────────
+  const agendarRevisoes = useCallback(async (topicoId, dataEstudo, dias = [7, 15, 30]) => {
+    if (!mentoria || !topicoId) return;
+
+    const novas = dias
+      .map((d) => {
+        const data = new Date(dataEstudo + 'T12:00:00');
+        data.setDate(data.getDate() + d);
+        const iso = data.toISOString().slice(0, 10);
+        return { mentoria_id: mentoria.id, topico_id: topicoId, data_estudo: dataEstudo,
+                 data_revisao: iso, dias: d, feita: false };
+      })
+      .filter((nova) => !revisoes.some(
+        (r) => r.topico_id === nova.topico_id && r.data_revisao === nova.data_revisao && !r.feita
+      ));
+
+    if (novas.length === 0) return;
+
+    const { data, error } = await supabase
+      .from('revisoes')
+      .insert(novas)
+      .select('id, topico_id, data_estudo, data_revisao, dias, feita, feita_em');
+
+    if (error) { setErro('Não foi possível agendar as revisões: ' + error.message); return; }
+    setRevisoes((atual) => [...atual, ...(data ?? [])].sort(
+      (a, b) => (a.data_revisao < b.data_revisao ? -1 : 1)
+    ));
+  }, [mentoria, revisoes]);
+
+  const alternarRevisao = useCallback(async (id, feita) => {
+    const antes = revisoes;
+    setRevisoes((atual) => atual.map(
+      (r) => (r.id === id ? { ...r, feita, feita_em: feita ? new Date().toISOString() : null } : r)
+    ));
+
+    const { error } = await supabase
+      .from('revisoes')
+      .update({ feita, feita_em: feita ? new Date().toISOString() : null })
+      .eq('id', id);
+
+    if (error) { setErro('Não foi possível salvar a revisão: ' + error.message); setRevisoes(antes); }
+  }, [revisoes]);
+
+  const excluirRevisao = useCallback(async (id) => {
+    const antes = revisoes;
+    setRevisoes((atual) => atual.filter((r) => r.id !== id));
+    const { error } = await supabase.from('revisoes').delete().eq('id', id);
+    if (error) { setErro('Não foi possível excluir: ' + error.message); setRevisoes(antes); }
+  }, [revisoes]);
+
   const totais = (() => {
     let total = 0;
     let concluidos = 0;
@@ -241,6 +386,10 @@ export function ProvedorDados({ children }) {
         mentorias, mentoria, trocarMentoria,
         disciplinas, progresso, plano, totais,
         registros, adicionarRegistro, excluirRegistro,
+        revisoes, agendarRevisoes, alternarRevisao, excluirRevisao,
+        frases, diasAtivos,
+        sequencia: calcularSequencia(diasAtivos),
+        frase: fraseDoDia(frases),
         estatisticasTopico, totalSegundos,
         carregando, erro, marcarTopico,
         recarregar: () => carregarConteudo(mentoria),

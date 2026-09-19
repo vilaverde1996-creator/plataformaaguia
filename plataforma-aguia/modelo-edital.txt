@@ -1,0 +1,23 @@
+# LÍNGUA PORTUGUESA
+## Compreensão e Interpretação de Texto
+1. Ideias principais e secundárias
+2. Inferências e pressupostos
+## Sintaxe
+1. Regência verbal e nominal
+2. Concordância verbal e nominal
+
+# RACIOCÍNIO LÓGICO
+- Proposições e conectivos
+- Sequências numéricas
+
+# LEGISLAÇÃO
+## Lei nº 13.303/2016
+- Disposições gerais
+- Licitações e contratos
+
+Como preencher:
+  #  uma cerquilha  = disciplina
+  ## duas cerquilhas = grupo dentro da disciplina (opcional)
+  As demais linhas são os tópicos.
+  Numeração (1., 1.2, a), traços e marcadores são removidos sozinhos.
+  Apague este bloco de instruções antes de importar.
