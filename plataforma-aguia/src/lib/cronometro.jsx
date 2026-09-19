@@ -45,6 +45,7 @@ export function ProvedorCronometro({ children }) {
     tipo: salvo?.tipo ?? 'teoria',
   });
   const [agora, setAgora] = useState(Date.now());
+  const [encerrando, setEncerrando] = useState(false);
 
   useEffect(() => {
     if (!rodando) return;
@@ -83,7 +84,11 @@ export function ProvedorCronometro({ children }) {
 
   return (
     <Contexto.Provider
-      value={{ rodando, decorrido, iniciar, pausar, zerar, contexto, definirContexto }}
+      value={{
+        rodando, decorrido, iniciar, pausar, zerar, contexto, definirContexto,
+        encerrando, pedirEncerramento: () => setEncerrando(true),
+        cancelarEncerramento: () => setEncerrando(false),
+      }}
     >
       {children}
     </Contexto.Provider>
@@ -98,9 +103,9 @@ export function useCronometro() {
 
 // Caixinha que acompanha o aluno em todas as telas.
 export function BarraCronometro({ irPara }) {
-  const { rodando, decorrido, iniciar, pausar } = useCronometro();
+  const { rodando, decorrido, iniciar, pausar, pedirEncerramento, encerrando } = useCronometro();
 
-  if (decorrido < 1 && !rodando) return null;
+  if ((decorrido < 1 && !rodando) || encerrando) return null;
 
   return (
     <div className={`crono-flutuante ${rodando ? 'crono-ativo' : ''}`}>
@@ -113,9 +118,19 @@ export function BarraCronometro({ irPara }) {
         {rodando ? '❚❚' : '▶'}
       </button>
 
-      <button className="crono-mini-tempo" type="button" onClick={() => irPara('estudar')}>
+      <button className="crono-mini-tempo" type="button" onClick={() => irPara('cronometro')}>
         {relogio(decorrido)}
         <span>{rodando ? 'estudando' : 'pausado'}</span>
+      </button>
+
+      <button
+        className="crono-mini-botao crono-mini-encerrar"
+        type="button"
+        onClick={() => { if (rodando) pausar(); pedirEncerramento(); }}
+        aria-label="Encerrar estudo e registrar"
+        title="Encerrar e registrar"
+      >
+        ■
       </button>
     </div>
   );

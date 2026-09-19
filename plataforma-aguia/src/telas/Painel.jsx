@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { useDados, nivelDaSequencia, NIVEIS } from '../lib/dados.jsx';
-import { horasCurtas } from './Estudar.jsx';
+import { horasCurtas } from '../lib/cronometro.jsx';
 import { separarRevisoes } from './Revisoes.jsx';
 
 export default function Painel({ nome, irPara }) {

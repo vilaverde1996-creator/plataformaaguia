@@ -6,8 +6,12 @@ import NovaSenha from './telas/NovaSenha.jsx';
 import PainelMentora from './telas/PainelMentora.jsx';
 import Importar from './telas/Importar.jsx';
 import Ciclos from './telas/Ciclos.jsx';
-import Ciclo from './telas/Ciclo.jsx';
 import Questoes from './telas/Questoes.jsx';
+import Cronometro from './telas/Cronometro.jsx';
+import FecharEstudo from './telas/FecharEstudo.jsx';
+import Perfil from './telas/Perfil.jsx';
+import Aulas from './telas/Aulas.jsx';
+import GerenciarAulas from './telas/GerenciarAulas.jsx';
 import { ProvedorCronometro, BarraCronometro } from './lib/cronometro.jsx';
 import Painel from './telas/Painel.jsx';
 import Edital from './telas/Edital.jsx';
@@ -16,15 +20,19 @@ import Revisoes from './telas/Revisoes.jsx';
 import Estatisticas from './telas/Estatisticas.jsx';
 import PlanoDeVoo from './telas/PlanoDeVoo.jsx';
 
+const SITE = 'https://asasdeaguia.com.br';
+
 const ABAS = [
   { id: 'inicio', rotulo: 'Início' },
-  { id: 'ciclo', rotulo: 'Ciclo' },
   { id: 'estudar', rotulo: 'Estudar' },
+  { id: 'cronometro', rotulo: 'Cronômetro' },
   { id: 'questoes', rotulo: 'Questões' },
+  { id: 'aulas', rotulo: 'Aulas' },
   { id: 'edital', rotulo: 'Edital' },
   { id: 'revisoes', rotulo: 'Revisões' },
   { id: 'estatisticas', rotulo: 'Estatísticas' },
   { id: 'plano', rotulo: 'Plano de voo' },
+  { id: 'perfil', rotulo: 'Meu perfil' },
 ];
 
 function BarraAluno({ aba, setAba }) {
@@ -42,6 +50,10 @@ function BarraAluno({ aba, setAba }) {
           {a.rotulo}
         </button>
       ))}
+
+      <a className="aba aba-site" href={SITE} target="_blank" rel="noreferrer">
+        Asas de Águia ↗
+      </a>
 
       {mentorias.length > 1 && (
         <select
@@ -63,6 +75,7 @@ const ABAS_MENTORA = [
   { id: 'alunos', rotulo: 'Alunos' },
   { id: 'ciclos', rotulo: 'Ciclos' },
   { id: 'importar', rotulo: 'Importar' },
+  { id: 'aulas', rotulo: 'Aulas' },
 ];
 
 function AreaMentora() {
@@ -81,11 +94,15 @@ function AreaMentora() {
             {a.rotulo}
           </button>
         ))}
+        <a className="aba aba-site" href={SITE} target="_blank" rel="noreferrer">
+          Asas de Águia ↗
+        </a>
       </nav>
 
       {aba === 'alunos' && <PainelMentora />}
       {aba === 'ciclos' && <Ciclos />}
       {aba === 'importar' && <Importar />}
+      {aba === 'aulas' && <GerenciarAulas />}
     </>
   );
 }
@@ -97,10 +114,13 @@ function AreaAluno({ nome }) {
     <ProvedorDados>
       <BarraAluno aba={aba} setAba={setAba} />
       <BarraCronometro irPara={setAba} />
+      <FecharEstudo />
       {aba === 'inicio' && <Painel nome={nome} irPara={setAba} />}
-      {aba === 'ciclo' && <Ciclo irPara={setAba} />}
-      {aba === 'estudar' && <Estudar />}
+      {aba === 'estudar' && <Estudar irPara={setAba} />}
+      {aba === 'cronometro' && <Cronometro />}
       {aba === 'questoes' && <Questoes />}
+      {aba === 'aulas' && <Aulas />}
+      {aba === 'perfil' && <Perfil />}
       {aba === 'edital' && <Edital />}
       {aba === 'revisoes' && <Revisoes />}
       {aba === 'estatisticas' && <Estatisticas />}

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useDados } from '../lib/dados.jsx';
-import { horasCurtas } from './Estudar.jsx';
+import { horasCurtas } from '../lib/cronometro.jsx';
 
 function ultimosDias(quantidade) {
   const lista = [];

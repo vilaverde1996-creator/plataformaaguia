@@ -649,3 +649,36 @@ input[type="file"] {
 @media (max-width: 560px) {
   .crono-flutuante { right: 12px; bottom: 12px; }
 }
+
+/* ── Encerrar estudo ─────────────────────────────────────────────── */
+.modal-fundo {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(13, 19, 76, 0.45);
+  display: grid; place-items: center;
+  padding: 16px; overflow-y: auto;
+}
+.modal {
+  background: var(--papel);
+  border-radius: var(--raio);
+  padding: 24px;
+  width: 100%; max-width: 460px;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 24px 50px rgba(13, 19, 76, 0.28);
+}
+.crono-mini-encerrar { background: #ef4444; font-size: 0.72rem; }
+.crono-mini-encerrar:hover { background: #b91c1c; }
+
+/* ── Link do site e aulas ────────────────────────────────────────── */
+.aba-site {
+  margin-left: auto;
+  align-self: center;
+  color: var(--ambar-escuro);
+  text-decoration: none;
+  font: 600 0.88rem 'Inter', sans-serif;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+.aba-site:hover { text-decoration: underline; }
+.material-icone { font-size: 1.2rem; flex: none; }
+.registro .botao { width: auto; flex: none; padding: 7px 14px; font-size: 0.85rem; }
+.entrada-links { display: flex; flex-direction: column; gap: 2px; }
