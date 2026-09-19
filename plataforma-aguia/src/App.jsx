@@ -6,9 +6,11 @@ import NovaSenha from './telas/NovaSenha.jsx';
 import PainelMentora from './telas/PainelMentora.jsx';
 import InicioAluno from './telas/InicioAluno.jsx';
 import Edital from './telas/Edital.jsx';
+import Estudar from './telas/Estudar.jsx';
 
 const ABAS = [
   { id: 'inicio', rotulo: 'Início' },
+  { id: 'estudar', rotulo: 'Estudar' },
   { id: 'edital', rotulo: 'Edital' },
 ];
 
@@ -50,7 +52,9 @@ function AreaAluno({ nome }) {
   return (
     <ProvedorDados>
       <BarraAluno aba={aba} setAba={setAba} />
-      {aba === 'inicio' ? <InicioAluno nome={nome} /> : <Edital />}
+      {aba === 'inicio' && <InicioAluno nome={nome} />}
+      {aba === 'estudar' && <Estudar />}
+      {aba === 'edital' && <Edital />}
     </ProvedorDados>
   );
 }

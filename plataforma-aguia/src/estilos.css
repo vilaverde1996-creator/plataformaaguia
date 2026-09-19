@@ -306,3 +306,55 @@ input:focus-visible {
 @media (max-width: 560px) {
   .seletor-edital { max-width: 130px; }
 }
+
+/* ── Cronômetro e registros ──────────────────────────────────────── */
+.cronometro { text-align: center; }
+.crono-display {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(2.6rem, 12vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 14px;
+}
+.crono-campos { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 14px; }
+.crono-botoes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.crono-botoes .botao { width: auto; flex: 1 1 120px; }
+.crono-fechamento { text-align: left; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--borda); }
+.crono-fechamento-titulo { font-family: 'Nunito', sans-serif; font-weight: 800; margin: 0 0 12px; }
+
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: #fafbff;
+  font: inherit;
+  color: var(--tinta);
+  margin-bottom: 14px;
+}
+.crono-campos select { margin-bottom: 0; }
+
+.botao-destaque { background: var(--ambar); }
+.botao-destaque:hover { background: var(--ambar-escuro); }
+.botao-claro { background: #eceffa; color: var(--tinta); }
+.botao-claro:hover { background: #e2e6f6; }
+.botao-claro:disabled { opacity: 0.45; cursor: not-allowed; }
+.largura-total { display: block; width: 100%; margin-top: 16px; }
+
+.linha-campos { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.linha-campos input { margin-bottom: 12px; }
+
+.dia { padding: 14px 18px; margin-top: 12px; }
+.dia-topo {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: 'Nunito', sans-serif; margin-bottom: 6px;
+}
+.dia-topo span { color: var(--ambar-escuro); font-weight: 800; }
+
+.registro { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid #f1f3fa; }
+.registro-texto { flex: 1 1 auto; font-size: 0.93rem; }
+.registro-topico { color: var(--tinta-media); }
+.registro-detalhe { color: var(--tinta-suave); font-size: 0.82rem; margin-top: 2px; }
+.registro-obs { color: var(--tinta-media); font-size: 0.85rem; margin-top: 4px; font-style: italic; }
+.registro .botao-texto { margin: 0; font-size: 0.8rem; flex: none; }

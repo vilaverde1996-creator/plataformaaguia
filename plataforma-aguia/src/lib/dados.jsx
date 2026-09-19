@@ -22,6 +22,7 @@ export function ProvedorDados({ children }) {
   const [disciplinas, setDisciplinas] = useState([]);
   const [progresso, setProgresso] = useState({});
   const [plano, setPlano] = useState([]);
+  const [registros, setRegistros] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
@@ -68,7 +69,7 @@ export function ProvedorDados({ children }) {
     setCarregando(true);
     setErro('');
 
-    const [arvore, prog, secoes] = await Promise.all([
+    const [arvore, prog, secoes, regs] = await Promise.all([
       supabase
         .from('disciplinas')
         .select('id, nome, cor, ordem, grupos(id, nome, ordem, topicos(id, nome, ordem))')
@@ -83,9 +84,15 @@ export function ProvedorDados({ children }) {
             .select('id, secao, titulo, subtitulo, texto, icone, estilo, ordem')
             .eq('plano_id', m.plano_id)
         : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from('registros')
+        .select('id, data, disciplina_id, topico_id, tipo, segundos, questoes, acertos, erros, obs, origem')
+        .eq('mentoria_id', m.id)
+        .order('data', { ascending: false })
+        .limit(400),
     ]);
 
-    const problema = arvore.error || prog.error || secoes.error;
+    const problema = arvore.error || prog.error || secoes.error || regs.error;
     if (problema) setErro(problema.message);
 
     setDisciplinas(
@@ -100,6 +107,7 @@ export function ProvedorDados({ children }) {
     setProgresso(mapa);
 
     setPlano(ordenar(secoes.data));
+    setRegistros(regs.data ?? []);
     setCarregando(false);
   }, []);
 
@@ -139,6 +147,80 @@ export function ProvedorDados({ children }) {
     }
   }, [mentoria, progresso]);
 
+
+  // ── Registros de estudo ────────────────────────────────────────
+  const adicionarRegistro = useCallback(async (dados) => {
+    if (!mentoria) return { erro: 'Nenhum edital selecionado.' };
+
+    const linha = {
+      mentoria_id: mentoria.id,
+      data: dados.data,
+      disciplina_id: dados.disciplina_id || null,
+      topico_id: dados.topico_id || null,
+      tipo: dados.tipo || null,
+      segundos: Math.max(0, Math.round(dados.segundos || 0)),
+      questoes: Math.max(0, dados.questoes || 0),
+      acertos: Math.max(0, dados.acertos || 0),
+      erros: Math.max(0, dados.erros || 0),
+      obs: dados.obs || null,
+      origem: dados.origem || 'manual',
+    };
+
+    const { data, error } = await supabase
+      .from('registros')
+      .insert(linha)
+      .select('id, data, disciplina_id, topico_id, tipo, segundos, questoes, acertos, erros, obs, origem')
+      .single();
+
+    if (error) {
+      setErro('Não foi possível salvar o estudo: ' + error.message);
+      return { erro: error.message };
+    }
+
+    setRegistros((atual) => [data, ...atual]);
+    return { ok: true, registro: data };
+  }, [mentoria]);
+
+  const excluirRegistro = useCallback(async (id) => {
+    const antes = registros;
+    setRegistros((atual) => atual.filter((r) => r.id !== id));
+
+    const { error } = await supabase.from('registros').delete().eq('id', id);
+    if (error) {
+      setErro('Não foi possível excluir: ' + error.message);
+      setRegistros(antes);
+    }
+  }, [registros]);
+
+  // Soma, por tópico, o que veio das questões da plataforma
+  // (topico_progresso) com o que o aluno anotou à mão (registros).
+  const estatisticasTopico = (() => {
+    const mapa = {};
+    const pegar = (id) =>
+      (mapa[id] ??= { acertos: 0, erros: 0, questoes: 0, segundos: 0, concluido: false });
+
+    for (const [id, p] of Object.entries(progresso)) {
+      const e = pegar(id);
+      e.acertos += p.acertos ?? 0;
+      e.erros += p.erros ?? 0;
+      e.questoes += p.questoes ?? 0;
+      e.concluido = !!p.concluido;
+    }
+
+    for (const r of registros) {
+      if (!r.topico_id) continue;
+      const e = pegar(r.topico_id);
+      e.acertos += r.acertos ?? 0;
+      e.erros += r.erros ?? 0;
+      e.questoes += r.questoes ?? 0;
+      e.segundos += r.segundos ?? 0;
+    }
+
+    return mapa;
+  })();
+
+  const totalSegundos = registros.reduce((s, r) => s + (r.segundos ?? 0), 0);
+
   const totais = (() => {
     let total = 0;
     let concluidos = 0;
@@ -158,6 +240,8 @@ export function ProvedorDados({ children }) {
       value={{
         mentorias, mentoria, trocarMentoria,
         disciplinas, progresso, plano, totais,
+        registros, adicionarRegistro, excluirRegistro,
+        estatisticasTopico, totalSegundos,
         carregando, erro, marcarTopico,
         recarregar: () => carregarConteudo(mentoria),
       }}

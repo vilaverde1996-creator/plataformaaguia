@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
- 
+
 // ── Conexão com o banco ────────────────────────────────────────────
 // Estes dois valores ficam aqui mesmo, no código.
 //
@@ -9,13 +9,13 @@ import { createClient } from '@supabase/supabase-js';
 //
 // Onde achar os dois valores: Supabase → Project Settings → API
 // ───────────────────────────────────────────────────────────────────
- 
+
 const URL_SUPABASE = 'https://bygylyxsfxqxndpikofd.supabase.co';
-const CHAVE_ANON = 'sb_publishable_WAXSbXijyIQotr8KdSqqVg_GQaAnXPt';
- 
+const CHAVE_ANON = 'COLE_AQUI_A_CHAVE_ANON_PUBLIC';
+
 const url = import.meta.env.VITE_SUPABASE_URL || URL_SUPABASE;
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY || CHAVE_ANON;
- 
+
 if (!url || chave.startsWith('COLE_AQUI')) {
   document.body.innerHTML =
     '<div style="font:16px/1.6 system-ui;max-width:520px;margin:15vh auto;padding:24px;' +
@@ -25,5 +25,5 @@ if (!url || chave.startsWith('COLE_AQUI')) {
     'cole a chave <b>anon public</b> do Supabase na linha indicada.</p></div>';
   throw new Error('Chave anon public não configurada em src/lib/supabase.js');
 }
- 
+
 export const supabase = createClient(url, chave);

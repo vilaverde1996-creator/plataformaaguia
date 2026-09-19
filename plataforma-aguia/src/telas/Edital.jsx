@@ -8,7 +8,7 @@ const FILTROS = [
 ];
 
 export default function Edital() {
-  const { disciplinas, progresso, totais, carregando, erro, marcarTopico } = useDados();
+  const { disciplinas, progresso, estatisticasTopico, totais, carregando, erro, marcarTopico } = useDados();
   const [filtro, setFiltro] = useState('todos');
   const [busca, setBusca] = useState('');
   const [abertas, setAbertas] = useState({});
@@ -95,8 +95,9 @@ export default function Edital() {
                   <ul className="topicos">
                     {g.visiveis.map((t) => {
                       const p = progresso[t.id];
-                      const respondidas = (p?.acertos ?? 0) + (p?.erros ?? 0);
-                      const pct = respondidas ? Math.round((p.acertos / respondidas) * 100) : null;
+                      const e = estatisticasTopico[t.id];
+                      const respondidas = (e?.acertos ?? 0) + (e?.erros ?? 0);
+                      const pct = respondidas ? Math.round((e.acertos / respondidas) * 100) : null;
                       return (
                         <li key={t.id} className={p?.concluido ? 'topico topico-feito' : 'topico'}>
                           <label>
@@ -110,7 +111,7 @@ export default function Edital() {
                           {pct !== null && (
                             <span
                               className={`etiqueta ${pct < 60 ? 'etiqueta-alerta' : pct < 75 ? 'etiqueta-atencao' : ''}`}
-                              title={`${p.acertos} acertos e ${p.erros} erros`}
+                              title={`${e.acertos} acertos e ${e.erros} erros`}
                             >
                               {pct}%
                             </span>
