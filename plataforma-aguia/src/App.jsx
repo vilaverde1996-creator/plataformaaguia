@@ -5,6 +5,8 @@ import Entrar from './telas/Entrar.jsx';
 import NovaSenha from './telas/NovaSenha.jsx';
 import PainelMentora from './telas/PainelMentora.jsx';
 import Importar from './telas/Importar.jsx';
+import Ciclos from './telas/Ciclos.jsx';
+import Ciclo from './telas/Ciclo.jsx';
 import Painel from './telas/Painel.jsx';
 import Edital from './telas/Edital.jsx';
 import Estudar from './telas/Estudar.jsx';
@@ -14,6 +16,7 @@ import PlanoDeVoo from './telas/PlanoDeVoo.jsx';
 
 const ABAS = [
   { id: 'inicio', rotulo: 'Início' },
+  { id: 'ciclo', rotulo: 'Ciclo' },
   { id: 'estudar', rotulo: 'Estudar' },
   { id: 'edital', rotulo: 'Edital' },
   { id: 'revisoes', rotulo: 'Revisões' },
@@ -55,6 +58,7 @@ function BarraAluno({ aba, setAba }) {
 
 const ABAS_MENTORA = [
   { id: 'alunos', rotulo: 'Alunos' },
+  { id: 'ciclos', rotulo: 'Ciclos' },
   { id: 'importar', rotulo: 'Importar' },
 ];
 
@@ -76,7 +80,9 @@ function AreaMentora() {
         ))}
       </nav>
 
-      {aba === 'alunos' ? <PainelMentora /> : <Importar />}
+      {aba === 'alunos' && <PainelMentora />}
+      {aba === 'ciclos' && <Ciclos />}
+      {aba === 'importar' && <Importar />}
     </>
   );
 }
@@ -88,6 +94,7 @@ function AreaAluno({ nome }) {
     <ProvedorDados>
       <BarraAluno aba={aba} setAba={setAba} />
       {aba === 'inicio' && <Painel nome={nome} irPara={setAba} />}
+      {aba === 'ciclo' && <Ciclo irPara={setAba} />}
       {aba === 'estudar' && <Estudar />}
       {aba === 'edital' && <Edital />}
       {aba === 'revisoes' && <Revisoes />}

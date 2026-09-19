@@ -103,6 +103,7 @@ export function ProvedorDados({ children }) {
   const [revisoes, setRevisoes] = useState([]);
   const [frases, setFrases] = useState([]);
   const [diasAtivos, setDiasAtivos] = useState([]);
+  const [cicloItens, setCicloItens] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
@@ -157,7 +158,7 @@ export function ProvedorDados({ children }) {
     setCarregando(true);
     setErro('');
 
-    const [arvore, prog, secoes, regs, revs] = await Promise.all([
+    const [arvore, prog, secoes, regs, revs, ciclo] = await Promise.all([
       supabase
         .from('disciplinas')
         .select('id, nome, cor, ordem, grupos(id, nome, ordem, topicos(id, nome, ordem))')
@@ -183,6 +184,11 @@ export function ProvedorDados({ children }) {
         .select('id, topico_id, data_estudo, data_revisao, dias, feita, feita_em')
         .eq('mentoria_id', m.id)
         .order('data_revisao', { ascending: true }),
+      supabase
+        .from('ciclo_itens')
+        .select('disciplina_id, peso, ordem')
+        .eq('edital_id', m.edital_id)
+        .order('ordem', { ascending: true }),
     ]);
 
     const problema = arvore.error || prog.error || secoes.error || regs.error || revs.error;
@@ -202,6 +208,7 @@ export function ProvedorDados({ children }) {
     setPlano(ordenar(secoes.data));
     setRegistros(regs.data ?? []);
     setRevisoes(revs.data ?? []);
+    setCicloItens(ciclo.data ?? []);
     setCarregando(false);
   }, []);
 
@@ -366,6 +373,66 @@ export function ProvedorDados({ children }) {
     if (error) { setErro('Não foi possível excluir: ' + error.message); setRevisoes(antes); }
   }, [revisoes]);
 
+
+  // ── Ciclos ─────────────────────────────────────────────────────
+  // A fila só anda aqui: ao concluir (ou pular) um ciclo.
+  const avancarCiclo = useCallback(async ({ posicao, disciplinaId, topicoId, pulado }) => {
+    if (!mentoria) return;
+    const proxima = posicao + 1;
+
+    setMentorias((atual) =>
+      atual.map((m) => (m.id === mentoria.id ? { ...m, ciclo_posicao: proxima } : m))
+    );
+
+    const [{ error: erroPosicao }, { error: erroHistorico }] = await Promise.all([
+      supabase.from('mentorias').update({ ciclo_posicao: proxima }).eq('id', mentoria.id),
+      supabase.from('ciclo_execucoes').insert({
+        mentoria_id: mentoria.id,
+        posicao,
+        disciplina_id: disciplinaId ?? null,
+        topico_id: topicoId ?? null,
+        pulado: !!pulado,
+      }),
+    ]);
+
+    const problema = erroPosicao || erroHistorico;
+    if (problema) {
+      setErro('Não foi possível avançar o ciclo: ' + problema.message);
+      setMentorias((atual) =>
+        atual.map((m) => (m.id === mentoria.id ? { ...m, ciclo_posicao: posicao } : m))
+      );
+    }
+  }, [mentoria]);
+
+  const concluirCiclo = useCallback(async (ciclo, { agendarRevisao = true } = {}) => {
+    if (!ciclo) return;
+    await marcarTopico(ciclo.topico.id, true);
+    if (agendarRevisao) await agendarRevisoes(ciclo.topico.id, diaDeHoje(), [7, 15, 30]);
+    await avancarCiclo({
+      posicao: ciclo.posicao,
+      disciplinaId: ciclo.disciplina?.id,
+      topicoId: ciclo.topico.id,
+    });
+  }, [marcarTopico, agendarRevisoes, avancarCiclo]);
+
+  const pularCiclo = useCallback(async (ciclo) => {
+    if (!ciclo) return;
+    await avancarCiclo({
+      posicao: ciclo.posicao,
+      disciplinaId: ciclo.disciplina?.id,
+      topicoId: ciclo.topico?.id,
+      pulado: true,
+    });
+  }, [avancarCiclo]);
+
+  const voltarCiclo = useCallback(async () => {
+    const posicao = Math.max(0, (mentoria?.ciclo_posicao ?? 0) - 1);
+    setMentorias((atual) =>
+      atual.map((m) => (m.id === mentoria.id ? { ...m, ciclo_posicao: posicao } : m))
+    );
+    await supabase.from('mentorias').update({ ciclo_posicao: posicao }).eq('id', mentoria.id);
+  }, [mentoria]);
+
   const totais = (() => {
     let total = 0;
     let concluidos = 0;
@@ -387,7 +454,8 @@ export function ProvedorDados({ children }) {
         disciplinas, progresso, plano, totais,
         registros, adicionarRegistro, excluirRegistro,
         revisoes, agendarRevisoes, alternarRevisao, excluirRevisao,
-        frases, diasAtivos,
+        frases, diasAtivos, cicloItens,
+        concluirCiclo, pularCiclo, voltarCiclo,
         sequencia: calcularSequencia(diasAtivos),
         frase: fraseDoDia(frases),
         estatisticasTopico, totalSegundos,
