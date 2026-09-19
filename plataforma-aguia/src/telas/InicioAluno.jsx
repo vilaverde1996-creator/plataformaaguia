@@ -1,29 +1,37 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
+import { useDados } from '../lib/dados.jsx';
 
 export default function InicioAluno({ nome }) {
+  const { mentoria, mentorias, carregando: carregandoDados, totais } = useDados();
   const [resumo, setResumo] = useState(null);
-  const [recado, setRecado] = useState('');
-  const [carregando, setCarregando] = useState(true);
+  const [buscando, setBuscando] = useState(true);
   const [erro, setErro] = useState('');
 
   useEffect(() => {
+    if (!mentoria) return;
+    let ativo = true;
+
     (async () => {
-      const [{ data: linha, error: e1 }, { data: mentoria, error: e2 }] = await Promise.all([
-        supabase.from('vw_resumo_mentoria').select('*').eq('ativa', true).maybeSingle(),
-        supabase.from('mentorias').select('recado').eq('ativa', true).maybeSingle(),
-      ]);
+      setBuscando(true);
+      const { data, error } = await supabase
+        .from('vw_resumo_mentoria')
+        .select('*')
+        .eq('mentoria_id', mentoria.id)
+        .maybeSingle();
 
-      if (e1 || e2) setErro((e1 || e2).message);
-      setResumo(linha ?? null);
-      setRecado(mentoria?.recado ?? '');
-      setCarregando(false);
+      if (!ativo) return;
+      if (error) setErro(error.message);
+      setResumo(data ?? null);
+      setBuscando(false);
     })();
-  }, []);
 
-  if (carregando) return <div className="pagina">Carregando seus dados…</div>;
+    return () => { ativo = false; };
+  }, [mentoria?.id]);
 
-  if (!resumo) {
+  if (carregandoDados && !mentoria) return <div className="pagina">Carregando seus dados…</div>;
+
+  if (mentorias.length === 0) {
     return (
       <div className="pagina">
         <h1>Olá, {nome}</h1>
@@ -38,45 +46,49 @@ export default function InicioAluno({ nome }) {
   return (
     <div className="pagina">
       <h1>Olá, {nome}</h1>
-      <p className="subtitulo">{resumo.edital}</p>
+      <p className="subtitulo">{mentoria?.nomeEdital}</p>
 
-      {recado && (
+      {erro && <div className="aviso aviso-erro">{erro}</div>}
+
+      {mentoria?.recado && (
         <div className="recado">
           <h2>Recado da mentora</h2>
-          <div>{recado}</div>
+          <div>{mentoria.recado}</div>
         </div>
       )}
 
       <div className="grade">
         <div className="cartao indicador">
-          <div className="numero">{resumo.dias_para_prova ?? '—'}</div>
+          <div className="numero">{resumo?.dias_para_prova ?? '—'}</div>
           <div className="rotulo">dias para a prova</div>
         </div>
 
         <div className="cartao indicador">
-          <div className="numero">{resumo.pct_edital ?? 0}%</div>
+          <div className="numero">{totais.pct}%</div>
           <div className="rotulo">do edital concluído</div>
           <div className="detalhe">
-            {resumo.topicos_concluidos} de {resumo.topicos_total} tópicos
+            {totais.concluidos} de {totais.total} tópicos
           </div>
         </div>
 
         <div className="cartao indicador">
-          <div className="numero">{resumo.horas_semana ?? 0}h</div>
+          <div className="numero">{buscando ? '…' : `${resumo?.horas_semana ?? 0}h`}</div>
           <div className="rotulo">estudadas nesta semana</div>
-          {resumo.meta_horas && <div className="detalhe">Meta: {resumo.meta_horas}h</div>}
+          {mentoria?.meta_horas && <div className="detalhe">Meta: {mentoria.meta_horas}h</div>}
         </div>
 
         <div className="cartao indicador">
           <div className="numero">
-            {resumo.aproveitamento === null ? '—' : `${resumo.aproveitamento}%`}
+            {resumo?.aproveitamento == null ? '—' : `${resumo.aproveitamento}%`}
           </div>
           <div className="rotulo">de acerto nas questões</div>
-          {resumo.meta_aprovamento && <div className="detalhe">Meta: {resumo.meta_aprovamento}%</div>}
+          {mentoria?.meta_aprovamento && (
+            <div className="detalhe">Meta: {mentoria.meta_aprovamento}%</div>
+          )}
         </div>
       </div>
 
-      {(resumo.revisoes_hoje > 0 || resumo.revisoes_atrasadas > 0) && (
+      {(resumo?.revisoes_hoje > 0 || resumo?.revisoes_atrasadas > 0) && (
         <div className="cartao">
           <h2>Revisões</h2>
           <p style={{ margin: 0 }}>
