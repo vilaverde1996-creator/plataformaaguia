@@ -1,8 +1,59 @@
+import { useState } from 'react';
 import { useSessao } from './lib/sessao.jsx';
+import { ProvedorDados, useDados } from './lib/dados.jsx';
 import Entrar from './telas/Entrar.jsx';
 import NovaSenha from './telas/NovaSenha.jsx';
 import PainelMentora from './telas/PainelMentora.jsx';
 import InicioAluno from './telas/InicioAluno.jsx';
+import Edital from './telas/Edital.jsx';
+
+const ABAS = [
+  { id: 'inicio', rotulo: 'Início' },
+  { id: 'edital', rotulo: 'Edital' },
+];
+
+function BarraAluno({ aba, setAba }) {
+  const { mentorias, mentoria, trocarMentoria } = useDados();
+
+  return (
+    <nav className="abas">
+      {ABAS.map((a) => (
+        <button
+          key={a.id}
+          type="button"
+          className={aba === a.id ? 'aba aba-ativa' : 'aba'}
+          onClick={() => setAba(a.id)}
+        >
+          {a.rotulo}
+        </button>
+      ))}
+
+      {mentorias.length > 1 && (
+        <select
+          className="seletor-edital"
+          value={mentoria?.id ?? ''}
+          onChange={(e) => trocarMentoria(e.target.value)}
+          aria-label="Escolher o edital"
+        >
+          {mentorias.map((m) => (
+            <option key={m.id} value={m.id}>{m.nomeEdital}</option>
+          ))}
+        </select>
+      )}
+    </nav>
+  );
+}
+
+function AreaAluno({ nome }) {
+  const [aba, setAba] = useState('inicio');
+
+  return (
+    <ProvedorDados>
+      <BarraAluno aba={aba} setAba={setAba} />
+      {aba === 'inicio' ? <InicioAluno nome={nome} /> : <Edital />}
+    </ProvedorDados>
+  );
+}
 
 export default function App() {
   const { sessao, perfil, carregando, sair, recuperandoSenha } = useSessao();
@@ -33,7 +84,7 @@ export default function App() {
       ) : ehMentora ? (
         <PainelMentora />
       ) : (
-        <InicioAluno nome={(perfil?.nome || '').split(' ')[0] || 'tudo bem'} />
+        <AreaAluno nome={(perfil?.nome || '').split(' ')[0] || 'tudo bem'} />
       )}
     </>
   );
